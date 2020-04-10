@@ -11,8 +11,6 @@ Pay attention:
 * the police are in specific route -> observe it before go immediately 
 * u can speed up 3 times to escape or speed up ur process 
 
-ToDo list:
+Finished !
 
-[ ] Bug in game
-[ ] walls 
-[ ] SM of police 
+left readme to write and video
