@@ -159,7 +159,7 @@ class MyGame(Widget):
         # a callback will be called when the keyboard has been closed [touch interface]
         self.key = Window.request_keyboard(self.key_closed,self)
         self.key.bind(on_key_down=self.key_down)
-        self.speed = 25
+        self.speed = 15
         self.chance=3
         self.count = 10
         self.money=0
@@ -167,10 +167,13 @@ class MyGame(Widget):
         self.Rewards_list=[]
         self.Wall_list=[]
         self.cd_list=[]
+        self.catch=False
+        self.catcher=[]
+        self.end=False
         self.part_time=False
         self.asked=False
         self.cd_inf=None
-        self.check_time=10
+        self.check_time=20
         self.count=2
         self.Color=(0, 1,0)
         # Polices' routes:
@@ -215,16 +218,45 @@ class MyGame(Widget):
         self.Warning_label = CoreLabel(text='Safe',font_size=20,bold=True)
         self.Warning_label.refresh()
         # show the image: 
+
+
+        Window.clearcolor = (1, 1, 1, 1)
         with self.canvas:
             
+
             # AGENTS:
             self.Play = Rectangle(pos=(0,0),size=(100,200),source='img/player.jpg')
             self.Police1 = Rectangle(pos=(1030,670),size=(100,200),source='img/police.jpg')
             self.Police2=Rectangle(pos=(200,400),size=(100,200),source='img/police.jpg')
             self.Police3=Rectangle(pos=(1750,850),size=(100,200),source='img/police.jpg')
             
-            
+           
+
+
+            # Rewards: five rewards: 
+            # middle 
+            self.Reward1 = Rectangle(pos=(1030,950),size=(100,100),source='img/honey.png')
+            self.Rewards_list.append(self.Reward1)
+            # left side 
+            self.Reward2 = Rectangle(pos=(200,400),size=(100,100),source='img/honey.png')
+            self.Rewards_list.append(self.Reward2)
+            self.Reward3 = Rectangle(pos=(660,400),size=(100,100),source='img/honey.png')
+            self.Rewards_list.append(self.Reward3)
+            self.Reward4 = Rectangle(pos=(660,1200),size=(100,100),source='img/honey.png')
+            self.Rewards_list.append(self.Reward4)
+            self.Reward5 = Rectangle(pos=(200,1200),size=(100,100),source='img/honey.png')
+            self.Rewards_list.append(self.Reward5)
+            # right side:
+            self.cd1 = Rectangle(pos=(1750,400),size=(200,200),source='img/cd.jpeg')
+            self.cd_list.append(self.cd1)
+            self.cd2 = Rectangle(pos=(1750,1200),size=(200,200),source='img/cd.jpeg')
+            self.cd_list.append(self.cd2)
+            self.Reward6 = Rectangle(pos=(1700,900),size=(100,100),source='img/honey.png')
+            self.Rewards_list.append(self.Reward6)
+           
+             
             # Walls :
+            Color(0,0,0)
             self.Outv1=Rectangle(pos=(130,300),size=(20,1200))
             self.Outv2=Rectangle(pos=(2000,300),size=(20,1200))
             # self.Inv1=Rectangle(pos=(830,300),size=(20,1200))
@@ -272,40 +304,51 @@ class MyGame(Widget):
             self.Wall_list.append(self.Inh22)
             self.Wall_list.append(self.Inh31)
             self.Wall_list.append(self.Inh32)
-
-
-            # Rewards: five rewards: 
-            # middle 
-            self.Reward1 = Rectangle(pos=(1030,950),size=(100,100),source='img/honey.png')
-            self.Rewards_list.append(self.Reward1)
-            # left side 
-            self.Reward2 = Rectangle(pos=(200,400),size=(100,100),source='img/honey.png')
-            self.Rewards_list.append(self.Reward2)
-            self.Reward3 = Rectangle(pos=(660,400),size=(100,100),source='img/honey.png')
-            self.Rewards_list.append(self.Reward3)
-            self.Reward4 = Rectangle(pos=(660,1200),size=(100,100),source='img/honey.png')
-            self.Rewards_list.append(self.Reward4)
-            self.Reward5 = Rectangle(pos=(200,1200),size=(100,100),source='img/honey.png')
-            self.Rewards_list.append(self.Reward5)
-            # right side:
-            self.cd1 = Rectangle(pos=(1750,400),size=(200,200),source='img/cd.jpeg')
-            self.cd_list.append(self.cd1)
-            self.cd2 = Rectangle(pos=(1750,1200),size=(200,200),source='img/cd.jpeg')
-            self.cd_list.append(self.cd2)
-            self.Reward6 = Rectangle(pos=(1700,900),size=(100,100),source='img/honey.png')
-            self.Rewards_list.append(self.Reward6)
-            # LABEL
+        
+             # LABEL
             self.Speed_up_label_on_canvas=Rectangle(texture=self.Speed_up_label.texture,pos=(2400-260,1400),size=(250,80))
             self.Money_label_on_canvas=Rectangle(texture=self.Money_label.texture,pos=(2400-160,1400-90),size=(150,80))
             self.Cd_label_on_canvas=Rectangle(texture=self.Cd_label.texture,pos=(10000,10000),size=(300,80))
             self.timer_label_on_canvas=Rectangle(texture=self.timer_label.texture,pos=(1000,10000),size=(300,80))
+            
             Color(self.Color[0],self.Color[1],self.Color[2])
             self.Warning_label_on_canvas=Rectangle(texture=self.Warning_label.texture,pos=(2400-150,1400-90-90-90),size=(100,80))
 
         
-        Clock.schedule_interval(self.police_route,0)
+
         Clock.schedule_interval(self.police2_route,0)
+        Clock.schedule_interval(self.police_route,0)
+        Clock.schedule_interval(self.police3_route,0)
         Clock.schedule_interval(self.Part_time,0)
+        Clock.schedule_interval(self.danger,0)
+        Clock.schedule_interval(self.win,0)
+
+    def win(self,dt):
+        if (self.Money_label.text)=='Money: '+ str(6) and self.Play.pos[1]<300-60:
+            self.Win_label()
+            Clock.unschedule(self.police2_route)
+            Clock.unschedule(self.police_route)
+            Clock.unschedule(self.police3_route)
+
+            
+    def danger(self,dt):
+        
+        if self.catch:
+            if self.end:
+                self.End_label()
+                Clock.unschedule(self.police2_route)
+                Clock.unschedule(self.police_route)
+                Clock.unschedule(self.police3_route)
+                
+            else:
+                self.Warn_label()
+                
+            
+        else:
+            self.Safe_label()
+
+
+
     def key_closed(self):
         self.key.unbind(on_key_down=self.key_down)
         self.key=None
@@ -336,7 +379,7 @@ class MyGame(Widget):
             self.count-=1
         if self.count<=0 and self.speed==50:
             self.count=10
-            self.speed=25
+            self.speed=15
         # coord : up is positive / right is positive : bottom left is origin 
         move =True
         # cannot outbound
@@ -382,9 +425,9 @@ class MyGame(Widget):
                 self.canvas.remove(reward)
                 self.Rewards_list.remove(reward)
 
-        # Win ? :
-        if (self.Money_label.text)=='Money: '+ str(6) and self.Play.pos[1]<300-60:
-            self.Win_label()
+
+        
+
 
                  
             
@@ -393,9 +436,8 @@ class MyGame(Widget):
         
         (curx,cury) =self.Police1.pos
         self.p1.step((self.Police1,self.Play,self.Horizon_Route_Direction))
+        x,y=self.Horizon_Route
         if self.p1.state == 'Route':
-            x,y=self.Horizon_Route
-
             speed=100*dt
             if self.Horizon_Route_Direction==1:
                 cury+=speed
@@ -406,14 +448,20 @@ class MyGame(Widget):
                 if cury<=y[0]: 
                     self.Horizon_Route_Direction=1
 
-            self.Safe_label()
+            
             self.Police1.pos=(curx,cury)
-        
+            if self.catch and 1 in self.catcher:
+                if len(self.catcher)==1:
+                    self.catch=False
+                    self.catcher=[]
+                else:
+                    self.catcher.remove(1)
         if self.p1.state == 'Catch':
-            self.Warn_label()
-
+            self.catch=True
+            self.catcher.append(1)
+            self.catcher=list(set(self.catcher))
         if self.p1.state=='End':
-            self.End_label()
+            self.end=True
 
     def police2_route(self,dt):
         (curx,cury) =self.Police2.pos
@@ -437,14 +485,21 @@ class MyGame(Widget):
                 cury-=speed
                 if cury<=y[0]:
                     self.Circle_Route_Direction=2
-            self.Safe_label()
             self.Police2.pos=(curx,cury)
-
+            if self.catch and 2 in self.catcher:
+                if len(self.catcher)==1:
+                    self.catch=False
+                    self.catcher=[]
+                else:
+                    self.catcher.remove(2)
         if self.p2.state == 'Catch':
-            self.Warn_label()
+            self.catch=True
+            self.catcher.append(2)
+            self.catcher=list(set(self.catcher))      
+        
 
         if self.p2.state=='End':
-            self.End_label()
+            self.end=True
 
 
     def Part_time(self,dt):
@@ -473,7 +528,7 @@ class MyGame(Widget):
 
 
     def police3_route(self,dt):
-        speed=80*dt
+        speed=50*dt
         (curx,cury) =self.Police3.pos
         x,y=self.Check_Route
         self.p3.step((self.Police3,self.Play,self.Check_Route_Direction))
@@ -489,21 +544,29 @@ class MyGame(Widget):
                     self.Check_Route_Direction=0
                     self.count-=1
             elif self.Check_Route_Direction==0 and self.check_time>=0:
-                self.check_time-=0.1
+                self.check_time-=0.025
             elif self.Check_Route_Direction==0 and self.check_time<0:
                 xi,yi=self.Police3.pos
                 xf,yf=(1750,850)
                 self.Check_Route=((xi,xf),(yi,yf))
                 self.Check_Route_Direction=np.sign(yf-yi)
-                self.check_time=10
+                self.check_time=20
                 
             self.Police3.pos=(curx,cury)
+            if self.catch and 3 in self.catcher:
+                if len(self.catcher)==1:
+                    self.catch=False
+                    self.catcher=[]
+                else:
+                    self.catcher.remove(3)
         if self.p3.state == 'Catch':
-            self.Warn_label()
+            self.catch=True
+            self.catcher.append(3)
+            self.catcher=list(set(self.catcher))
 
         if self.p3.state=='End':
-            self.End_label()
-                 
+            self.end=True    
+
     def Warn_label(self):
         self.canvas.remove(self.Warning_label_on_canvas)
         self.Warning_label.text = 'Warn'
@@ -528,14 +591,17 @@ class MyGame(Widget):
             Color(0,0,1)
             self.Warning_label_on_canvas=Rectangle(texture=self.Warning_label.texture,pos=(800,600),size=(700,350))
         self.key.unbind(on_key_down=self.key_down)
+        time.sleep(1)
+
     def Win_label(self):
         self.canvas.remove(self.Warning_label_on_canvas)
-        self.Warning_label.text = 'Win'
+        self.Warning_label.text = 'Win!!!'
         self.Warning_label.refresh()
         with self.canvas:
             Color(0,0,1)
             self.Warning_label_on_canvas=Rectangle(texture=self.Warning_label.texture,pos=(800,600),size=(700,350))
         self.key.unbind(on_key_down=self.key_down)
+        time.sleep(1)
 
 class Kumamon_Run_Run_RunApp(App):
     def build(self):
