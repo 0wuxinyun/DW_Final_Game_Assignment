@@ -1,15 +1,15 @@
 from kivy.app import App
-from kivy.uix.button import Button
 from kivy.uix.widget import Widget
 from kivy.graphics import Rectangle
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.label import CoreLabel
 from kivy.core.window import Window
+from kivy.graphics import Color
 import time 
 import numpy as np
 from libdw import sm
-from kivy.graphics import Color
+
 
 # catch function game end when police catch bear:
 def catch(p1,p2):
